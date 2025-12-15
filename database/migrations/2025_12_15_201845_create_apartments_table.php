@@ -1,0 +1,62 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('apartments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->string('country');
+            $table->string('city');
+            $table->text('address')->nullable();
+            $table->decimal('price_per_night', 10, 2); // ديسيمال مشان نحسن نحط كسور بالسعر ومسموح فقط رقمين بعد الفاصلة
+            $table->integer('bedrooms')->default(1);
+            $table->integer('bathrooms')->default(1);
+            $table->integer('max_guests')->default(2);
+            $table->decimal('average_rating', 3, 2)->default(0.00);
+            $table->timestamps();
+
+            // هدول مواصفات اساسية ممكن نخليهم كأعمدة اساسية او منخليهم ضمن الوصف
+            // $table->boolean('has_wifi')->default(false);
+            // $table->boolean('has_parking')->default(false);
+            // $table->boolean('has_kitchen')->default(false);
+            // $table->boolean('has_ac')->default(false);
+            // $table->boolean('has_tv')->default(false);
+            // $table->boolean('has_washer')->default(false);
+            // $table->boolean('has_pool')->default(false);
+            // $table->boolean('has_gym')->default(false);
+
+
+
+            // هذه الفهارس لتسريع البحث
+            $table->index('city');
+            $table->index('price_per_night');
+            $table->index('pending');
+            $table->index('approved');
+            $table->index('rejected');
+            $table->index(['city', 'pending']);
+            $table->index(['city','approved']);
+            $table->index(['city','rejected']);
+            $table->index(['city','price_per_night']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('apartments');
+    }
+};
