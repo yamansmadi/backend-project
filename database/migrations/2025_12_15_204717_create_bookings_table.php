@@ -12,28 +12,31 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('apartment_id')->constrained('apartments')->onDelete('cascade');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->integer('total_nights');
-            $table->decimal('total_price', 10, 2);
-            $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled', 'completed'])->default('pending');
-            $table->enum('payment_status', ['pending', 'paid', 'refunded'])->default('pending');
-            $table->timestamps();
+        $table->id();
 
-            // Indexes للبحث والتقارير
-            $table->index('tenant_id');
-            $table->index('apartment_id');
-            $table->index('status');
-            $table->index('check_in');
-            $table->index('check_out');
-            $table->index(['check_in', 'check_out']);
-            $table->index(['apartment_id', 'status']);
-            $table->timestamps();
-        });
-    }
+        $table->foreignId('tenant_id')->constrained('users')->onDelete('cascade');
+
+        $table->foreignId('apartment_id')->constrained('apartments')->onDelete('cascade');
+
+        $table->date('start_date');
+        $table->date('end_date');
+
+        $table->integer('total_nights');
+        $table->decimal('total_price', 10, 2);
+
+        $table->enum('status', ['pending','approved','rejected'])->default('pending');
+
+        $table->enum('payment_status', ['pending','paid','refunded'])->default('pending');
+
+        // Indexes مفيدة فعلاً
+        $table->index('status');
+        $table->index(['apartment_id', 'status']);
+        $table->index(['start_date', 'end_date']);
+
+        $table->timestamps();
+    });
+
+}
 
     /**
      * Reverse the migrations.
