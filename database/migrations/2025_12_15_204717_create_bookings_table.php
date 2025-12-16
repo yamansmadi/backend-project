@@ -13,19 +13,13 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
         $table->id();
-
         $table->foreignId('tenant_id')->constrained('users')->onDelete('cascade');
-
         $table->foreignId('apartment_id')->constrained('apartments')->onDelete('cascade');
-
         $table->date('start_date');
         $table->date('end_date');
-
         $table->integer('total_nights');
         $table->decimal('total_price', 10, 2);
-
         $table->enum('status', ['pending','approved','rejected'])->default('pending');
-
         $table->enum('payment_status', ['pending','paid','refunded'])->default('pending');
 
         // Indexes مفيدة فعلاً
