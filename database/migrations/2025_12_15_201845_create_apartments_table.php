@@ -21,34 +21,20 @@ return new class extends Migration
             $table->string('city');
             $table->text('address')->nullable();
             $table->decimal('price_per_night', 10, 2); // ديسيمال مشان نحسن نحط كسور بالسعر ومسموح فقط رقمين بعد الفاصلة
-            $table->integer('bedrooms')->default(1);
-            $table->integer('bathrooms')->default(1);
             $table->integer('max_guests')->default(2);
             $table->decimal('average_rating', 3, 2)->default(0.00);
             $table->timestamps();
 
-            // هدول مواصفات اساسية ممكن نخليهم كأعمدة اساسية او منخليهم ضمن الوصف
-            // $table->boolean('has_wifi')->default(false);
-            // $table->boolean('has_parking')->default(false);
-            // $table->boolean('has_kitchen')->default(false);
-            // $table->boolean('has_ac')->default(false);
-            // $table->boolean('has_tv')->default(false);
-            // $table->boolean('has_washer')->default(false);
-            // $table->boolean('has_pool')->default(false);
-            // $table->boolean('has_gym')->default(false);
 
-
-
-            // هذه الفهارس لتسريع البحث
             $table->index('city');
             $table->index('price_per_night');
             $table->index('pending');
             $table->index('approved');
             $table->index('rejected');
             $table->index(['city', 'pending']);
-            $table->index(['city','approved']);
-            $table->index(['city','rejected']);
-            $table->index(['city','price_per_night']);
+            $table->index(['city', 'approved']);
+            $table->index(['city', 'rejected']);
+            $table->index(['city', 'price_per_night']);
         });
     }
 
