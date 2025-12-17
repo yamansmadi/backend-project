@@ -26,15 +26,6 @@ return new class extends Migration
             $table->timestamps();
 
 
-            $table->index('city');
-            $table->index('price_per_night');
-            $table->index('pending');
-            $table->index('approved');
-            $table->index('rejected');
-            $table->index(['city', 'pending']);
-            $table->index(['city', 'approved']);
-            $table->index(['city', 'rejected']);
-            $table->index(['city', 'price_per_night']);
         });
     }
 
