@@ -24,9 +24,7 @@ return new class extends Migration
             $table->string('related_type')->nullable();              // نوع السجل لمستخدم او شقة او حجز
             $table->timestamps();
 
-            $table->index(['related_id', 'related_type']);
-            $table->index('user_id');
-            $table->index('is_read');
+
         });
     }
 

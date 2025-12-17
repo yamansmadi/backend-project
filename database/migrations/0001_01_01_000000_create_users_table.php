@@ -30,9 +30,7 @@ return new class extends Migration
             $table->timestamps();
 
 
-            $table->index('phone_number');
-            $table->index('status');
-            $table->index('user_type');
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
