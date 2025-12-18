@@ -33,4 +33,9 @@ class Apartment extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }
