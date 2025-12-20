@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApartmentController;
 use App\Http\Controllers\Api\ApartmentSearchController;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
@@ -22,4 +23,11 @@ Route::prefix('search')->group(function () {
     Route::get('/apartments', [ApartmentSearchController::class, 'search']);
     Route::get('/cities', [ApartmentSearchController::class, 'getCities']);
     Route::get('/price-range', [ApartmentSearchController::class, 'getPriceRange']);
+});
+
+Route::prefix('/apartments')->middleware('auth:sanctum')->group(function () {
+    Route::post('/', [ApartmentController::class, 'store']);
+    Route::get('/{id}', [ApartmentController::class, 'show']);
+    Route::put('/{id}', [ApartmentController::class, 'update']);
+    Route::delete('/{id}', [ApartmentController::class, 'destroy']);
 });

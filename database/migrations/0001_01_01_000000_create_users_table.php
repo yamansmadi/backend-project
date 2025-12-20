@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('phone')->unique();
             $table->string('email')->nullable()->unique();
             $table->string('password');
-            $table->enum('role', ['tenant', 'owner', 'admin']);
             $table->enum('status', ['pending', 'active', 'blocked'])->default('pending');
             $table->string('profile_image')->nullable();
             $table->date('birth_date')->nullable();

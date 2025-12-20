@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Apartment extends Model
 {
-    protected $guarded = []; //مؤقتا بس
+    protected $guarded = [];
 
 
     public function owner()

@@ -118,7 +118,7 @@ class ApartmentSearchController extends Controller
 
     public function getPriceRange()
     {
-        $minPrice = Apartment::active()->min('price_per_night');
+        $minPrice = Apartment::min('price_per_night');
         $maxPrice = Apartment::max('price_per_night');
 
         return response()->json([
