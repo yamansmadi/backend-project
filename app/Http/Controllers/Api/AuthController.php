@@ -10,25 +10,49 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:users,phone',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20|unique:users,phone',
+        'email' => 'nullable|email|max:255|unique:users,email',
+        'password' => 'required|string|min:8|confirmed',
 
-        $user = User::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'status' => 'pending',
-        ]);
+        'birth_date' => 'nullable|date',
+        'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        'id_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    ]);
 
-        return response()->json([
-            'message' => 'User registered successfully. Waiting for admin approval.',
-            'user' => $user
-        ], 201);
+    $profileImagePath = null;
+    $idImagePath = null;
+
+    if ($request->hasFile('profile_image')) {
+        $profileImagePath = $request->file('profile_image')
+            ->store('users/profile_images', 'public');
     }
+
+    if ($request->hasFile('id_image')) {
+        $idImagePath = $request->file('id_image')
+            ->store('users/id_images', 'public');
+    }
+
+    $user = User::create([
+        'name' => $request->name,
+        'phone' => $request->phone,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'status' => 'pending',
+
+        'birth_date' => $request->birth_date,
+        'profile_image' => $profileImagePath,
+        'id_image' => $idImagePath,
+    ]);
+
+    return response()->json([
+        'message' => 'User registered successfully. Waiting for admin approval.',
+        'user' => $user
+    ], 201);
+}
+
 
     public function login(Request $request)
     {
