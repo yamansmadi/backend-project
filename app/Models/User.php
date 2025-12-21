@@ -19,8 +19,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'firstName',
-        'lastName',
+        'name',
         'email',
         'phone',
         'password',
@@ -37,11 +36,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public function canAccessFilament(): bool
+    {
+        return $this->email === 'admin@gmail.com';
+    }
+
+
     protected function casts(): array
     {
         return [
