@@ -6,7 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'tenant_id',
+        'apartment_id',
+        'start_date',
+        'end_date',
+        'total_nights',
+        'total_price',
+        'status',
+        'payment_status',
+    ];
 
 
     public function tenant()

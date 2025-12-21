@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApartmentController;
 use App\Http\Controllers\Api\ApartmentSearchController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BookingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +31,8 @@ Route::prefix('/apartments')->middleware('auth:sanctum')->group(function () {
     Route::get('/{id}', [ApartmentController::class, 'show']);
     Route::put('/{id}', [ApartmentController::class, 'update']);
     Route::delete('/{id}', [ApartmentController::class, 'destroy']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('bookings', BookingController::class);
 });
