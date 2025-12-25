@@ -23,7 +23,6 @@ class User extends Authenticatable
         'phone',
         'email',
         'password',
-        'status',
         'birth_date',
         'profile_image',
         'id_image',
@@ -63,7 +62,7 @@ class User extends Authenticatable
         return $this->hasMany(Booking::class, 'tenant_id');
     }
 
-    public function reviews()
+    public function ratings()
     {
         return $this->hasMany(Review::class, 'tenant_id');
     }
