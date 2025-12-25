@@ -28,10 +28,24 @@ class ApartmentController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $apartment = Apartment::all();
-        return response()->json($apartment);
+        $query = Apartment::with('images');
+
+        // فلترة حسب المدينة إذا وجدت في الطلب
+        if ($request->has('city')) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+
+        // فلترة حسب المحافظة
+        if ($request->has('governorate')) {
+            $query->where('governorate', $request->governorate);
+        }
+
+        // عرض الشقق النشطة فقط (تجنباً لعرض شقق تحت المراجعة)
+        // $query->where('status', 'active');
+
+        return response()->json($query->get());
     }
 
     public function store(Request $request)
@@ -96,7 +110,6 @@ class ApartmentController extends Controller
                 'message' => 'Apartment created successfully',
                 'apartment' => $apartment->load('images')
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -109,68 +122,83 @@ class ApartmentController extends Controller
 
 
     public function update(Request $request, $id)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $apartment = Apartment::where('id', $id)
-        ->where('owner_id', $user->id)
-        ->first();
+        $apartment = Apartment::where('id', $id)
+            ->where('owner_id', $user->id)
+            ->first();
 
-    if (!$apartment) {
+        if (!$apartment) {
+            return response()->json([
+                'message' => 'Apartment not found or unauthorized'
+            ], 404);
+        }
+
+        $data = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'price_per_night' => 'sometimes|numeric',
+            'bedrooms' => 'sometimes|integer',
+            'governorate' => 'sometimes|string',
+            'city' => 'sometimes|string',
+            'address' => 'sometimes|nullable|string',
+            'max_guests' => 'sometimes|integer',
+            'has_wifi' => 'sometimes|boolean',
+            'status' => 'sometimes|in:pending,active,reserved'
+        ]);
+
+        $apartment->update($data);
+
         return response()->json([
-            'message' => 'Apartment not found or unauthorized'
-        ], 404);
+            'message' => 'Apartment updated successfully',
+            'apartment' => $apartment->load('images')
+        ]);
     }
-
-    $data = $request->validate([
-        'title' => 'sometimes|string|max:255',
-        'description' => 'sometimes|nullable|string',
-        'price_per_night' => 'sometimes|numeric',
-        'bedrooms' => 'sometimes|integer',
-        'governorate' => 'sometimes|string',
-        'city' => 'sometimes|string',
-        'address' => 'sometimes|nullable|string',
-        'max_guests' => 'sometimes|integer',
-        'has_wifi' => 'sometimes|boolean',
-        'status' => 'sometimes|in:pending,active,reserved'
-    ]);
-
-    $apartment->update($data);
-
-    return response()->json([
-        'message' => 'Apartment updated successfully',
-        'apartment' => $apartment->load('images')
-    ]);
-}
 
     public function destroy(Request $request, $id)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $apartment = Apartment::where('id', $id)
-        ->where('owner_id', $user->id)
-        ->first();
-
-    if (!$apartment) {
-        return response()->json([
-            'message' => 'Apartment not found or unauthorized'
-        ], 404);
-    }
-
-    // Delete images from storage
-    foreach ($apartment->images as $image) {
-        if (Storage::disk('public')->exists($image->image_path)) {
-            Storage::disk('public')->delete($image->image_path);
+        // التحقق من أن المستخدم هو أدمن
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'message' => 'Unauthorized. Only admins can delete apartments.'
+            ], 403);
         }
+
+        $apartment = Apartment::find($id);
+
+        if (!$apartment) {
+            return response()->json(['message' => 'Apartment not found'], 404);
+        }
+
+        // حذف الصور من التخزين الفيزيائي
+        foreach ($apartment->images as $image) {
+            if (Storage::disk('public')->exists($image->image_path)) {
+                Storage::disk('public')->delete($image->image_path);
+            }
+        }
+
+        $apartment->delete();
+
+        return response()->json(['message' => 'Apartment deleted successfully by Admin']);
     }
 
-    $apartment->delete();
+    public function myApartments(Request $request)
+    {
+        $user = $request->user();
 
-    return response()->json([
-        'message' => 'Apartment deleted successfully'
-    ]);
-}
+        // جلب الشقق التابعة لهذا المالك فقط مع صورها
+        $apartments = Apartment::with('images')
+            ->where('owner_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-
-
+        return response()->json([
+            'success' => true,
+            'count' => $apartments->count(),
+            'data' => $apartments
+        ]);
+    }
 }

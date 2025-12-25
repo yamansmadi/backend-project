@@ -19,7 +19,7 @@ return new class extends Migration
         $table->date('end_date');
         $table->integer('total_nights')-> nullable();
         $table->decimal('total_price', 10, 2);
-        $table->enum('status', ['pending','approved','rejected'])->default('pending');
+        $table->enum('status', ['pending','approved','rejected','cancelled'])->default('pending');
         $table->enum('payment_status', ['pending','paid','refunded'])->default('pending');
 
         // Indexes مفيدة فعلاً

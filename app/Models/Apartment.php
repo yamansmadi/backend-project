@@ -26,7 +26,7 @@ class Apartment extends Model
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(Booking::class, 'apartment_id');
     }
 
     public function reviews()

@@ -25,7 +25,7 @@ class Booking extends Model
 
     public function apartment()
     {
-        return $this->belongsTo(Apartment::class);
+        return $this->belongsTo(Apartment::class, 'apartment_id');
     }
 
     public function review()
@@ -37,5 +37,4 @@ class Booking extends Model
     {
         return $this->hasMany(Message::class);
     }
-
 }

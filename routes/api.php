@@ -14,10 +14,10 @@ Route::get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-    // Logged-in user info
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/me', fn (Request $r) => $r->user());
-        Route::post('/logout', [AuthController::class, 'logout']);
+// Logged-in user info
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', fn(Request $r) => $r->user());
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
 Route::prefix('search')->group(function () {
@@ -28,11 +28,39 @@ Route::prefix('search')->group(function () {
 
 Route::prefix('/apartments')->middleware('auth:sanctum')->group(function () {
     Route::post('/', [ApartmentController::class, 'store']);
-    Route::get('/{id}', [ApartmentController::class, 'show']);
+    Route::get('apartments/{id}', [ApartmentController::class, 'show']);
     Route::put('/{id}', [ApartmentController::class, 'update']);
     Route::delete('/{id}', [ApartmentController::class, 'destroy']);
 });
 
+Route::get('apartments/{id}', [ApartmentController::class, 'show']);
+Route::get('apartments', [ApartmentController::class, 'index']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('bookings', BookingController::class);
+
+    // --- روابط المستأجر (Tenant) ---
+
+    // استعراض كافة الحجوزات الخاصة بالمستأجر (الفلترة ستكون داخل الـ Controller)
+    Route::get('bookings', [BookingController::class, 'index']);
+
+    // إنشاء حجز جديد، عرض تفاصيل حجز، تعديل، حذف
+    Route::apiResource('bookings', BookingController::class)->except(['index']);
+
+    // إلغاء الحجز من قبل المستأجر
+    Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel']);
+
+
+    // --- روابط المالك (Owner) ---
+
+    // استعراض الحجوزات الواردة لمالك الشقق
+    Route::get('owner/bookings', [BookingController::class, 'ownerBookings']);
+
+    // الموافقة على الحجز أو التعديل
+    Route::post('bookings/{booking}/approve', [BookingController::class, 'approve']);
+
+    // رفض طلب الحجز من قبل المالك
+    Route::post('bookings/{booking}/reject', [BookingController::class, 'reject']);
 });
+
+Route::get('owner/apartments', [ApartmentController::class, 'myApartments'])->middleware('auth:sanctum');
