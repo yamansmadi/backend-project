@@ -28,9 +28,9 @@ class Booking extends Model
         return $this->belongsTo(Apartment::class, 'apartment_id');
     }
 
-    public function review()
+    public function rating()
     {
-        return $this->hasOne(Review::class);
+        return $this->hasOne(Rating::class);
     }
 
     public function messages()

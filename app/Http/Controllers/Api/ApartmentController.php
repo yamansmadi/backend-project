@@ -42,8 +42,7 @@ class ApartmentController extends Controller
             $query->where('governorate', $request->governorate);
         }
 
-        // عرض الشقق النشطة فقط (تجنباً لعرض شقق تحت المراجعة)
-        // $query->where('status', 'active');
+        $query->where('status', 'active');
 
         return response()->json($query->get());
     }

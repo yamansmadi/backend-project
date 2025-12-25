@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApartmentController;
 use App\Http\Controllers\Api\ApartmentSearchController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\RatingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +29,6 @@ Route::prefix('search')->group(function () {
 
 Route::prefix('/apartments')->middleware('auth:sanctum')->group(function () {
     Route::post('/', [ApartmentController::class, 'store']);
-    Route::get('apartments/{id}', [ApartmentController::class, 'show']);
     Route::put('/{id}', [ApartmentController::class, 'update']);
     Route::delete('/{id}', [ApartmentController::class, 'destroy']);
 });
@@ -63,4 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('bookings/{booking}/reject', [BookingController::class, 'reject']);
 });
 
+
 Route::get('owner/apartments', [ApartmentController::class, 'myApartments'])->middleware('auth:sanctum');
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/ratings', [RatingController::class, 'index']);
+    Route::post('/ratings', [RatingController::class, 'store']);
+    Route::put('/ratings/{rating}', [RatingController::class, 'update']);
+    Route::delete('/ratings/{rating}', [RatingController::class, 'destroy']);
+});
+
