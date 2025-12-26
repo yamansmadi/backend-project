@@ -28,25 +28,36 @@ class ApartmentController extends Controller
         ]);
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $query = Apartment::with('images');
+        // عرض جميع الشقق مع صورها وتفاصيل المالك
+        // هذا التابع مفيد جداً للوحة تحكم الأدمن (Admin Dashboard)
+        $apartments = Apartment::with(['images', 'owner'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15); // استخدمنا الترقيم بدلاً من get لجعل الـ API أسرع
 
-        // فلترة حسب المدينة إذا وجدت في الطلب
-        if ($request->has('city')) {
-            $query->where('city', 'like', '%' . $request->city . '%');
-        }
-
-        // فلترة حسب المحافظة
-        if ($request->has('governorate')) {
-            $query->where('governorate', $request->governorate);
-        }
-
-        $query->where('status', 'active');
-
-        return response()->json($query->get());
+        return response()->json([
+            'success' => true,
+            'data' => $apartments
+        ]);
     }
 
+    public function myApartments(Request $request) //مثل الاندكس ولكن فقط للمالك
+    {
+        $user = $request->user();
+
+        // جلب الشقق التابعة لهذا المالك فقط مع صورها
+        $apartments = Apartment::with('images')
+            ->where('owner_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'count' => $apartments->count(),
+            'data' => $apartments
+        ]);
+    }
     public function store(Request $request)
     {
         $user = $request->user();
@@ -158,46 +169,37 @@ class ApartmentController extends Controller
     public function destroy(Request $request, $id)
     {
         $user = $request->user();
-
-        // التحقق من أن المستخدم هو أدمن
-        if ($user->role !== 'admin') {
-            return response()->json([
-                'message' => 'Unauthorized. Only admins can delete apartments.'
-            ], 403);
-        }
-
-        $apartment = Apartment::find($id);
+        $apartment = Apartment::with('bookings')->find($id);
 
         if (!$apartment) {
-            return response()->json(['message' => 'Apartment not found'], 404);
+            return response()->json(['message' => 'the apartment not found'], 404);
         }
 
-        // حذف الصور من التخزين الفيزيائي
-        foreach ($apartment->images as $image) {
-            if (Storage::disk('public')->exists($image->image_path)) {
-                Storage::disk('public')->delete($image->image_path);
-            }
+        // التحقق من الصلاحية (مالك أو أدمن)
+        if ($user->id !== $apartment->owner_id && $user->role !== 'admin') {
+            return response()->json(['message' => 'You are not authorized to delete this apartment.'], 403);
         }
 
+        // التحقق من وجود حجوزات نشطة أو مستقبلية
+        // سنفترض أن الحجز النشط هو الذي حالته ليست (cancelled) وتاريخ نهايته لم يمضِ بعد
+        $hasActiveBookings = $apartment->bookings()
+            ->where('status', '!=', 'cancelled')
+            ->where('end_date', '>=', now()->toDateString())
+            ->exists();
+
+        if ($hasActiveBookings) {
+            return response()->json([
+                'message' => 'The apartment cannot be deleted because it has active or future bookings associated with it. You can deactivate them instead.'
+            ], 422);
+        }
+
+        $apartment->update([
+            'status' => 'inactive'
+        ]);
+
+        // إذا لم يوجد حجوزات نشطة، نقوم بالحذف الناعم
         $apartment->delete();
 
-        return response()->json(['message' => 'Apartment deleted successfully by Admin']);
-    }
-
-    public function myApartments(Request $request)
-    {
-        $user = $request->user();
-
-        // جلب الشقق التابعة لهذا المالك فقط مع صورها
-        $apartments = Apartment::with('images')
-            ->where('owner_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'count' => $apartments->count(),
-            'data' => $apartments
-        ]);
+        return response()->json(['message' => 'The apartment was successfully deleted (soft delete to preserve records).']);
     }
 }

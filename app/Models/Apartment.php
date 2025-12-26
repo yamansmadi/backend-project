@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Apartment extends Model
 {
     protected $guarded = [];
 
+    use SoftDeletes;
 
     public function owner()
     {
@@ -34,8 +36,8 @@ class Apartment extends Model
         return $this->hasMany(Rating::class);
     }
 
-    public function scopeActive($query)
+    public function favorites()
     {
-        return $query->where('is_active', true);
+        return $this->hasMany(Favorite::class);
     }
 }

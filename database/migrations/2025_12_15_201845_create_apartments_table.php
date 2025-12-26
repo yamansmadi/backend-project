@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('apartments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
-            $table->enum('status', ['pending', 'active', 'reserved'])->default('active');
+            $table->enum('status', ['pending', 'active', 'reserved','inactive'])->default('active');
             $table->boolean('has_wifi')->default(false);
             $table->integer('bedrooms')->default(1);
             $table->string('title');
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->decimal('price_per_night', 10, 2); // ديسيمال مشان نحسن نحط كسور بالسعر ومسموح فقط رقمين بعد الفاصلة
             $table->integer('max_guests')->default(2);
             $table->decimal('average_rating', 3, 2)->default(0.00);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

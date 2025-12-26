@@ -19,7 +19,6 @@ return new class extends Migration
 
             // منع تكرار نفس الشقة في المفضلة لنفس المستخدم
             $table->unique(['user_id', 'apartment_id']);
-            $table->index('user_id');
         });
     }
 

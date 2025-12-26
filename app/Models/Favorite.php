@@ -8,6 +8,7 @@ class Favorite extends Model
 {
     protected $table = 'favorites';
     protected $guarded = [];
+    protected $fillable = ['user_id', 'apartment_id'];
 
     public function user()
     {

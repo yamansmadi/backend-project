@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApartmentController;
 use App\Http\Controllers\Api\ApartmentSearchController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\RatingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // رفض طلب الحجز من قبل المالك
     Route::post('bookings/{booking}/reject', [BookingController::class, 'reject']);
+
+    // للمسؤول (Admin): الحذف النهائي من قاعدة البيانات
+    Route::delete('bookings/{id}', [BookingController::class, 'destroy']);
 });
 
 
@@ -73,3 +77,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/ratings/{rating}', [RatingController::class, 'destroy']);
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    // عرض المفضلات
+    Route::get('favorites', [FavoriteController::class, 'index']);
+    // إضافة أو حذف (نرسل ID الشقة في الرابط)
+    Route::post('apartments/{id}/favorite', [FavoriteController::class, 'toggle']);
+});
+Route::middleware('auth:sanctum')->group(function () {
+
+    // روابط عامة (لا تحتاج تسجيل دخول) يعني ما بيهم انت مالك او مستأجر
+    Route::get('search/apartments', [ApartmentSearchController::class, 'search']);
+    Route::get('search/cities', [ApartmentSearchController::class, 'search']);
+    Route::get('apartments/{id}', [ApartmentController::class, 'show']);
+
+    // إدارة الشقق للمالك والأدمن
+    Route::apiResource('apartments', ApartmentController::class)->except(['index', 'show']);
+    Route::get('my-apartments', [ApartmentController::class, 'myApartments']);
+    Route::delete('apartments/{id}', [ApartmentController::class, 'destroy']); //فقط من قبل المالك او الادمن
+});

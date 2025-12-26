@@ -158,19 +158,22 @@ class BookingController extends Controller
         return response()->json(['message' => 'Booking updated. Waiting for owner approval on the new dates.', 'data' => $booking]);
     }
     // DELETE
-    public function destroy(Booking $booking)
+    public function destroy(Request $request, $id)
     {
-        $this->authorizeBooking($booking);
+        // التأكد من أن المستخدم هو أدمن
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Only Admin can delete booking records.'], 403);
+        }
 
-        if ($booking->status !== 'pending') {
-            return response()->json([
-                'message' => 'Cannot delete after approval'
-            ], 403);
+        $booking = Booking::find($id);
+
+        if (!$booking) {
+            return response()->json(['message' => 'Booking not found.'], 404);
         }
 
         $booking->delete();
 
-        return response()->noContent();
+        return response()->json(['message' => 'Booking record deleted permanently by Admin.']);
     }
 
     private function authorizeBooking(Booking $booking)

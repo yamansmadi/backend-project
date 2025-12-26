@@ -23,7 +23,7 @@ class ApartmentSearchController extends Controller
                 'end_date' => 'nullable|date|after:start_date',
             ]);
 
-            $query = Apartment::query()->with(['mainImage', 'owner']);
+            $query = Apartment::query()->where('status', 'active')->with(['mainImage', 'owner']);
 
             if ($request->filled('city')) {
                 $query->where('city', 'like', '%' . $request->city . '%');
@@ -43,8 +43,8 @@ class ApartmentSearchController extends Controller
             if ($request->filled('has_wifi')) {
                 $query->where('has_wifi', $request->boolean('has_wifi'));
             }
-            if ($request->filled('bedrooms')) {
-                $query->where('bedrooms', '>=', $request->bedrooms);
+            if ($request->has('bedrooms') && $request->bedrooms != null) {
+                $query->where('bedrooms', '=', $request->bedrooms);
             }
 
             if ($request->filled(['start_date', 'end_date'])) {
@@ -83,33 +83,5 @@ class ApartmentSearchController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    public function getCities()
-    {
-        $cities = Apartment::query()
-            ->select('city', 'governorate', DB::raw('COUNT(*) as apartments_count'))
-            ->groupBy('city', 'governorate')
-            ->orderBy('city')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $cities
-        ]);
-    }
-
-    public function getPriceRange()
-    {
-        $minPrice = Apartment::min('price_per_night');
-        $maxPrice = Apartment::max('price_per_night');
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'min_price' => (float) $minPrice,
-                'max_price' => (float) $maxPrice
-            ]
-        ]);
     }
 }
